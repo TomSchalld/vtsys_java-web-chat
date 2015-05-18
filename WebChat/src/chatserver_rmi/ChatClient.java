@@ -30,7 +30,7 @@ public class ChatClient implements Serializable {
 	boolean newMessage;
 	boolean isWebUser;
 	String message;
-
+	HttpSession session;
 	public boolean hasNewMessage() {
 		return newMessage;
 	}
@@ -59,7 +59,7 @@ public class ChatClient implements Serializable {
 		}
 	}
 
-	public ChatClient(String username) throws RemoteException,
+	public ChatClient(String username, HttpSession session) throws RemoteException,
 			MalformedURLException, NotBoundException {
 		super();
 		this.username = username;
@@ -71,6 +71,7 @@ public class ChatClient implements Serializable {
 		this.newMessage = false;
 		this.message = null;
 		this.isWebUser = true;
+		this.session = session;
 		if (cp != null) {
 			System.out.println("... done.");
 		}

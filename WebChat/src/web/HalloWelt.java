@@ -14,7 +14,6 @@ import chatserver_rmi.ChatClient;
 
 public class HalloWelt extends HttpServlet {
 	static List<ChatClient> clients = new LinkedList<ChatClient>();
-	static HttpSession session;
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,8 +26,9 @@ public class HalloWelt extends HttpServlet {
 		System.out.println(request.getParameter("username"));
 		if (request.getParameter("method").equals("subscribe")) {
 			try {
-				clients.add(new ChatClient(request.getParameter("username")));
-				session = request.getSession();
+				HttpSession session = request.getSession();
+				session.setAttribute("username", request.getParameter("username"));
+				clients.add(new ChatClient(request.getParameter("username"),session));
 				
 			} catch (NotBoundException e) {
 				e.printStackTrace();
