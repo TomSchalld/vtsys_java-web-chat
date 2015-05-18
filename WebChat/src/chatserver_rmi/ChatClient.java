@@ -23,7 +23,7 @@ import javax.servlet.http.HttpSession;
  * @author Thomas Schalldach & Fabian Brammer Copyright 2015
  */
 public class ChatClient implements Serializable {
-	ChatProxy cpi;
+	ChatProxy cp;
 	ClientProxy client;
 	String username;
 	ChatServer server;
