@@ -1,6 +1,7 @@
 package web;
 
 import java.io.*;
+import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,16 +22,23 @@ public class HalloWelt extends HttpServlet {
 		response.setContentType("text/plain;charset=UTF-8");
 		// Allocate a output writer to write the response message into the
 		// network socket
-		
+
 		PrintWriter out = response.getWriter();
 		System.out.println(request.getParameter("username"));
 		if (request.getParameter("method").equals("subscribe")) {
 			try {
 				HttpSession session = request.getSession();
-				session.setAttribute("username", request.getParameter("username"));
-				clients.add(new ChatClient(request.getParameter("username"),session));
-				
-			} catch (NotBoundException e) {
+				String username = request.getParameter("username");
+				if (search(username) == null) {
+					session.setAttribute("username", username);
+					clients.add(new ChatClient(username, session));
+				}
+				else{
+					System.out.println("username in use");
+					response.sendError(1001);
+				}
+			} catch (NotBoundException  | ConnectIOException e) {
+				response.sendError(1000);
 				e.printStackTrace();
 			}
 		} else if (request.getParameter("method").equals("unsubscribe")) {
@@ -41,13 +49,13 @@ public class HalloWelt extends HttpServlet {
 			}
 		} else if (request.getParameter("method").equals("SEND")) {
 			ChatClient tmp = this.search(request.getParameter("username"));
-			if(tmp!=null){
+			if (tmp != null) {
 				tmp.sendMessage(request.getParameter("message"));
 				out.println(request.getParameter("message"));
 			}
 		} else if (request.getParameter("method").equals("RECIEVE")) {
 			ChatClient tmp = this.search(request.getParameter("username"));
-			while(!tmp.hasNewMessage()){
+			while (!tmp.hasNewMessage()) {
 				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e) {
@@ -55,11 +63,11 @@ public class HalloWelt extends HttpServlet {
 					e.printStackTrace();
 				}
 			}
-			if(tmp.hasNewMessage()){
+			if (tmp.hasNewMessage()) {
 				out.println(tmp.getMessage());
 				tmp.setNewMessage(false);
 			}
-			
+
 		}
 
 		// Write the response message, in an HTML page

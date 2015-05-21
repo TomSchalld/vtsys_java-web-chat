@@ -15,8 +15,9 @@
 				id="login" type="submit" value="Login" />
 
 			<legend>Message</legend>
-			<textarea id="message" rows="2" cols="100" name="message" placeholder="Describe yourself here..."></textarea>
-			<br /><br /> <input id="send" type="submit" value="SEND">
+			<textarea id="message" rows="2" cols="100" name="message"
+				placeholder="Describe yourself here..."></textarea>
+			<br /> <br /> <input id="send" type="submit" value="SEND">
 
 		</fieldset>
 
@@ -34,6 +35,10 @@
 	overflow-y: scroll;
 	overflow-x: hidden;
 }
+
+#send {
+	display: none;
+}
 </style>
 <script>
 	var user = null;
@@ -44,12 +49,31 @@
 		global : false,
 		type : "GET"
 	});
+	$(window).bind('beforeunload', function() {
+		
+		return '>>>>>Achtung!<<<<<<<< \n Beim verlasen werden Sie Augeloggt';
+	});
+	$(window).bind('unload', function(e) {
+
+		func = "unsubscribe";
+		$.ajax({
+			data : {
+				"method" : func,
+				"username" : user
+			}
+		});
+		$('#login').prop('value', "Login");
+		$('#user').prop('disabled', false);
+		$('#server').prop('disabled', false);
+		$('#send').hide();
+		});
 	$('#login').click(function() {
 		if ($('#login').val() === "Login") {
 			func = "subscribe";
 			$('#login').prop('value', "Logout");
+			$('#login').prop('value', "Logout");
 			user = $('#user').val();
-			alert($('#user').val() + " subscribed");
+			
 			//call subscribe user here
 			$('#user').prop('disabled', true);
 			$('#server').prop('disabled', true);
@@ -59,8 +83,24 @@
 					"method" : func,
 					"username" : user
 				},
-				success : function(){
+				success : function() {
+					alert($('#user').val() + " subscribed");
+					$('#send').show();
 					recieve();
+				},
+				error : function(error) {
+					if (error.status === 1000) {
+						alert("Unable to login, server possibly down");
+					} else if (error.status === 1001) {
+						alert("Unable to login, username is already in use");
+					} else {
+						alert("Unable to login unknown error");
+					}
+
+					$('#login').prop('value', "Login");
+					$('#user').prop('disabled', false);
+					$('#server').prop('disabled', false);
+
 				}
 			});
 
@@ -76,12 +116,13 @@
 			$('#login').prop('value', "Login");
 			$('#user').prop('disabled', false);
 			$('#server').prop('disabled', false);
+			$('#send').hide();
 		}
 	});
 	$('#send').click(function() {
 		func = "SEND";
 		var message = $('#message').val();
-		
+
 		$.ajax({
 			data : {
 				"method" : func,
@@ -92,23 +133,22 @@
 				console.log("Send success call");
 			}
 		});
-		$('#message').prop('value',"");
+		$('#message').prop('value', "");
 	});
-	function recieve(){
-			func = "RECIEVE";
-			$.ajax({
-				data : {
-					"method" : func,
-					"username" : user
-				},
-				success : function(result) {
-					var post = "<p>" + result + "</p>";
-					$('#chatroom').prepend(post);
-					recieve();
-				}
-			});
-			
-		
+	function recieve() {
+		func = "RECIEVE";
+		$.ajax({
+			data : {
+				"method" : func,
+				"username" : user
+			},
+			success : function(result) {
+				var post = "<p>" + result + "</p>";
+				$('#chatroom').prepend(post);
+				recieve();
+			}
+		});
+
 	}
 </script>
 </html>
